@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, RouterProvider, Routes } from "react-router-dom";
 import React, { Component, useState, useRef, useEffect } from "react";
 import "./App.css";
 import Header from "./components/Header";
@@ -6,6 +6,7 @@ import Homepage from "./Pages/Homepage";
 import CoinPage from "./Pages/CoinPage";
 import { makeStyles } from "@mui/styles";
 import { Box } from "@mui/material";
+import Alert from "./components/Alert";
 
 function App() {
   // const useStyles = makeStyles({
@@ -29,6 +30,7 @@ function App() {
           <Route path="/coins/:id" exact element={<CoinPage />} />
         </Routes>
       </Box>
+      {/* <Alert />  */}
     </BrowserRouter>
   );
 }

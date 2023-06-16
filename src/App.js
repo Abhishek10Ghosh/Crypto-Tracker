@@ -7,6 +7,7 @@ import CoinPage from "./Pages/CoinPage";
 import { makeStyles } from "@mui/styles";
 import { Box } from "@mui/material";
 import Alert from "./components/Alert";
+import CryptoContext from "./CryptoContext";
 
 function App() {
   // const useStyles = makeStyles({
@@ -21,16 +22,22 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Box
-        sx={{ backgroundColor: "#14161a", color: "white", minHeight: "100vh" }}
-      >
-        <Header />
-        <Routes>
-          <Route path="/" exact element={<Homepage />} />
-          <Route path="/coins/:id" exact element={<CoinPage />} />
-        </Routes>
-      </Box>
-      {/* <Alert />  */}
+      <CryptoContext>
+        <Box
+          sx={{
+            backgroundColor: "#14161a",
+            color: "white",
+            minHeight: "100vh",
+          }}
+        >
+          <Header />
+          <Routes>
+            <Route path="/" exact element={<Homepage />} />
+            <Route path="/coins/:id" exact element={<CoinPage />} />
+          </Routes>
+          <Alert />
+        </Box>
+      </CryptoContext>
     </BrowserRouter>
   );
 }

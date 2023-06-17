@@ -6,15 +6,17 @@ import { SingleCoin } from "../config/api";
 import { useEffect } from "react";
 import axios from "axios";
 import CoinInfo from "../components/CoinInfo";
-import { Box, LinearProgress, Typography } from "@mui/material";
+import { Box, Button, LinearProgress, Typography } from "@mui/material";
 import ReactHtmlParser from "react-html-parser";
 import { numberWithCommas } from "../components/Banner/Carousel";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 const CoinPage = () => {
   const { id } = useParams();
   const [coin, setCoin] = useState();
 
-  const { currency, symbol } = CryptoState();
+  const { currency, symbol, user, watchlist, setAlert } = CryptoState();
 
   const fetchCoin = async () => {
     const { data } = await axios.get(SingleCoin(id));
@@ -25,6 +27,51 @@ const CoinPage = () => {
   useEffect(() => {
     fetchCoin();
   }, [currency]);
+
+  const inWatchlist = watchlist.includes(coin?.id); //if it already includes coins then true
+
+  const addToWatchlist = async () => {
+    const coinRef = doc(db, "watchlist", user.uid);
+
+    try {
+      await setDoc(coinRef, {
+        coins: watchlist ? [...watchlist, coin?.id] : [coin?.id],
+      });
+
+      setAlert({
+        open: true,
+        message: `${coin.name} Added to the Watchlist`,
+        type: "success",
+      });
+    } catch (error) {
+      setAlert({
+        open: true,
+        message: error.message,
+        type: "error",
+      });
+    }
+  };
+
+  const removeFromWatchlist = async() => {
+    const coinRef = doc(db, "watchlist", user.uid);
+
+    try {
+      await setDoc(coinRef, { coins: watchlist.filter((wish) => wish !== coin?.id) },
+      { merge: true });
+
+      setAlert({
+        open: true,
+        message: `${coin.name} Removed from the Watchlist`,
+        type: "success",
+      });
+    } catch (error) {
+      setAlert({
+        open: true,
+        message: error.message,
+        type: "error",
+      });
+    }
+  };
 
   if (!coin) return <LinearProgress style={{ backgroundColor: "gold" }} />;
 
@@ -68,6 +115,7 @@ const CoinPage = () => {
             width: "100%",
             fontFamily: "Montserrat",
             padding: 5,
+            paddingBottom:0,
             // paddingBottom: 10,
             paddingTop: 0,
             textAlign: "justify",
@@ -162,6 +210,21 @@ const CoinPage = () => {
               M
             </Typography>
           </span>
+
+          {user && (
+            <Button
+              variant="outlined"
+              style={{
+                width: "100%",
+                height: 40,
+                backgroundColor:inWatchlist ? "#ff0000" : "#EEBC1D",
+                marginTop: 20,
+              }}
+              onClick={inWatchlist? removeFromWatchlist : addToWatchlist}
+            >
+              {inWatchlist?"Remove from Watchlist" : "Add to Watchlist"}
+            </Button>
+          )}
         </Box>
       </Box>
       <CoinInfo coin={coin} />

@@ -5,7 +5,10 @@ import Button from "@mui/material/Button";
 import { CryptoState } from "../../CryptoContext";
 import { Avatar } from "@mui/material";
 import { signOut } from "firebase/auth";
-import { auth } from "../../firebase";
+import { auth, db } from "../../firebase";
+import { numberWithCommas } from "../Banner/Carousel";
+import {AiFillDelete} from "react-icons/ai"
+import { doc, setDoc } from "firebase/firestore";
 
 export default function UserSidebar() {
   const [state, setState] = React.useState({
@@ -15,7 +18,7 @@ export default function UserSidebar() {
     right: false,
   });
 
-  const { user, setAlert } = CryptoState();
+  const { user, setAlert, watchlist, coins, symbol } = CryptoState();
 
   const toggleDrawer = (anchor, open) => (event) => {
     if (
@@ -26,6 +29,27 @@ export default function UserSidebar() {
     }
 
     setState({ ...state, [anchor]: open });
+  };
+
+  const removeFromWatchlist = async(coin) => {
+    const coinRef = doc(db, "watchlist", user.uid);
+
+    try {
+      await setDoc(coinRef, { coins: watchlist.filter((wish) => wish !== coin?.id) },
+      { merge: true });
+
+      setAlert({
+        open: true,
+        message: `${coin.name} Removed from the Watchlist`,
+        type: "success",
+      });
+    } catch (error) {
+      setAlert({
+        open: true,
+        message: error.message,
+        type: "error",
+      });
+    }
   };
 
   const logOut = () => {
@@ -122,6 +146,34 @@ export default function UserSidebar() {
                   <span style={{ fontSize: 15, textShadow: "0 0 5px black" }}>
                     Watchlist
                   </span>
+
+                  {coins.map((coin) => {
+                    if (watchlist.includes(coin.id))
+                      return (
+                        <div
+                          style={{
+                            padding: 10,
+                            borderRadius: 5,
+                            color: "black",
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            backgroundColor: "#EEBC1D",
+                            boxShadow: "0 0 3px black",
+                          }}
+                        >
+                          <span>{coin.name}</span>
+                          <span style={{display:"flex", gap:8}}>{symbol}
+                          {numberWithCommas(coin.current_price.toFixed(2))}
+                          <AiFillDelete style={{cursor:"pointer"}}
+                            fontSize="16"
+                            onClick={() => removeFromWatchlist(coin)}
+                          />
+                          </span>
+                        </div>
+                      );
+                  })}
                 </div>
               </div>
               <Button
